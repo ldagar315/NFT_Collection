@@ -6,6 +6,10 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Iwhitelist.sol";
 
+interface IWhitelist {
+        function whitelistedAddresses(address) external view returns (bool);
+    }
+
 contract CryptoDevs is ERC721Enumerable, Ownable {
      
     //@dev _baseTokenURI for computing {tokenURI}. If set, the resulting URI for each
@@ -17,7 +21,7 @@ contract CryptoDevs is ERC721Enumerable, Ownable {
     uint256 public _price = 0.01 ether;
     bool public startTimer;                     // Just a counter to keep check whether the sale has started or not
     uint256 public endPresale;
-    IWhiteList whitelist ;               // Instance of previous whitelist app
+    IWhitelist whitelist ;               // Instance of previous whitelist app
 
     modifier onlyWhenNotPaused {
         require (!startTimer,"Contract Currently paused" );
@@ -26,7 +30,7 @@ contract CryptoDevs is ERC721Enumerable, Ownable {
 
     constructor (string memory baseURI, address whitelistContract) ERC721("Crypto Devs", "CD") {
           _baseTokenURI = baseURI;
-          whitelist = IWhiteList(whitelistContract);
+          whitelist = IWhitelist(whitelistContract);
       }
 
     function startPresale() public onlyOwner {
@@ -43,7 +47,7 @@ contract CryptoDevs is ERC721Enumerable, Ownable {
         // The timer has started and the 5 minutes are not passed since the timer started 
         require (startTimer && block.timestamp < endPresale, "The presale has ended");
         // The address is present in the whitelistedaddress list 
-        require (whitelist.whiteListedAddress(msg.sender),"User was not whitelisted");
+        require (whitelist.whitelistedAddresses(msg.sender),"User was not whitelisted");
         // The amount send by the minter is greater than 0.01 ethers 
         require (msg.value >= _price,"Amount sent not sufficient") ;
 
